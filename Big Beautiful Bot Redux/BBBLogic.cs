@@ -92,7 +92,8 @@ namespace BBB
             var guildUser = (IGuildUser) message.Author;
             if (!guildUser.GuildPermissions.Administrator) throw new UserInputException("You must be an administrator to set a welcome message.");
             var messageChannel = (SocketGuildChannel)message.Channel;
-            await _botData.SetGuildWelcome(messageChannel.Guild.Id, messageText);
+            await _botData.SetGuildWelcome(messageChannel.Guild.Id, messageText.Trim());
+            await message.Channel.SendMessageAsync("The welcome message was set :white_check_mark:");
         }
 
         private static Task<RestUserMessage> Ping(SocketMessage message) => message.Channel.SendMessageAsync((DateTimeOffset.Now - message.Timestamp).TotalMilliseconds.ToString("0ms"));
