@@ -1,6 +1,6 @@
 using ServiceStack.DataAnnotations;
 
-namespace Big_Beautiful_Bot_Redux
+namespace BBB.botdata
 {
     internal class RoleReaction
     {

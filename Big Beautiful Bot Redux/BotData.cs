@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using BBB.botdata;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 
-namespace Big_Beautiful_Bot_Redux
+namespace BBB
 {
     internal class BotData
     {

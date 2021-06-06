@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 
-namespace Big_Beautiful_Bot_Redux
+namespace BBB
 {
     internal class DiscordBotHost
     {

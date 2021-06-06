@@ -1,4 +1,4 @@
-﻿namespace Big_Beautiful_Bot_Redux
+﻿namespace BBB.botdata
 {
     public class Games
     {

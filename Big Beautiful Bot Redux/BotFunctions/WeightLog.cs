@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using BBB.botdata;
 using Discord;
 using Discord.WebSocket;
 
-namespace Big_Beautiful_Bot_Redux
+namespace BBB.BotFunctions
 {
     internal class WeightLog
     {

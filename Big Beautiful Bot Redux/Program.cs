@@ -2,7 +2,7 @@
 using System.IO;
 using ServiceStack.Text;
 
-namespace Big_Beautiful_Bot_Redux
+namespace BBB
 {
     internal class Program
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace Big_Beautiful_Bot_Redux
+namespace BBB
 {
     internal class UserInputException : Exception
     {

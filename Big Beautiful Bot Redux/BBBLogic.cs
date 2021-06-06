@@ -2,11 +2,12 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using BBB.BotFunctions;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
 
-namespace Big_Beautiful_Bot_Redux
+namespace BBB
 {
     /// <summary>
     ///     This is BBBs unique pipeline.
