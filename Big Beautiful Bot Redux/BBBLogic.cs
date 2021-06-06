@@ -82,8 +82,17 @@ namespace BBB
                 if (commandName.Equals("offer", StringComparison.InvariantCultureIgnoreCase)) await _roleManager.OfferRoles(message, commandArgs);
                 if (commandName.Equals("convert", StringComparison.InvariantCultureIgnoreCase)) await WeightConverter.ConvertWeight(message, commandArgs);
                 if (commandName.Equals("logWeight", StringComparison.InvariantCultureIgnoreCase)) await _weightLog.LogWeight(message, commandArgs);
+                if (commandName.Equals("setWelcome", StringComparison.InvariantCultureIgnoreCase)) await SetGuildWelcome(message, messageSansPrefix["setWelcome".Length..]);
                 if (commandName.Equals("leaderboard", StringComparison.InvariantCultureIgnoreCase)) await _weightLog.GetLeaderboard(message, commandArgs);
             }
+        }
+
+        private async Task SetGuildWelcome(SocketMessage message, string messageText)
+        {
+            var guildUser = (IGuildUser) message.Author;
+            if (!guildUser.GuildPermissions.Administrator) throw new UserInputException("You must be an administrator to set a welcome message.");
+            var messageChannel = (SocketGuildChannel)message.Channel;
+            await _botData.SetGuildWelcome(messageChannel.Guild.Id, messageText);
         }
 
         private static Task<RestUserMessage> Ping(SocketMessage message) => message.Channel.SendMessageAsync((DateTimeOffset.Now - message.Timestamp).TotalMilliseconds.ToString("0ms"));
@@ -92,7 +101,7 @@ namespace BBB
         {
             var welcome = await _botData.GetGuildWelcome(socketGuildUser.Guild.Id);
             if (welcome is null) return;
-            var welcomeMessage = string.Format(welcome.MessageTemplate, socketGuildUser.Username);
+            var welcomeMessage = string.Format(welcome.MessageTemplate, socketGuildUser.Mention);
             await socketGuildUser.Guild.DefaultChannel.SendMessageAsync(welcomeMessage);
         }
     }

@@ -54,5 +54,12 @@ namespace BBB
             using var db = await _dbFactory.OpenAsync();
             return await db.SingleWhereAsync<GuildWelcome>(nameof(GuildWelcome.GuildId), guildId);
         }
+
+        public async Task SetGuildWelcome(ulong guildId, string templateText)
+        {
+            using var db = await _dbFactory.OpenAsync();
+            db.CreateTableIfNotExists<GuildWelcome>();
+            db.Save(new GuildWelcome { GuildId = guildId, MessageTemplate = templateText });
+        }
     }
 }
