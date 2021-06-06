@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>BBB</RootNamespace>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <AssemblyName>BigBeautifulBot</AssemblyName>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Discord.Net" Version="2.4.0" />
+        <PackageReference Include="ServiceStack.OrmLite.Sqlite.Core" Version="5.11.0" />
+        <PackageReference Include="Unicode.net" Version="0.1.3" />
+    </ItemGroup>
+
+</Project>
