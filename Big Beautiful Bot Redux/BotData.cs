@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BBB.botdata;
+using BBB.DataModel;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 

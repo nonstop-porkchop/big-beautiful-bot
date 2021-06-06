@@ -1,6 +1,6 @@
 using ServiceStack.DataAnnotations;
 
-namespace BBB.botdata
+namespace BBB.DataModel
 {
     internal class GuildWelcome
     {

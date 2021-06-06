@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BBB.botdata;
+using BBB.DataModel;
 using Discord;
 using Discord.WebSocket;
 using Emoji = NeoSmart.Unicode.Emoji;
