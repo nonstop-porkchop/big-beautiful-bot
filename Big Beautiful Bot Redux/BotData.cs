@@ -59,7 +59,10 @@ namespace BBB
         {
             using var db = await _dbFactory.OpenAsync();
             db.CreateTableIfNotExists<GuildWelcome>();
-            db.Save(new GuildWelcome { GuildId = guildId, MessageTemplate = templateText });
+
+            var welcome = await GetGuildWelcome(guildId) ?? new GuildWelcome { GuildId = guildId };
+            welcome.MessageTemplate = templateText;
+            db.Save(welcome);
         }
     }
 }
