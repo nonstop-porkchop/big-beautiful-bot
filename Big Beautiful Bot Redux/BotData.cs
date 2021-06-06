@@ -15,38 +15,30 @@ namespace BBB
 
         public async Task InsertRoleReactions(IEnumerable<RoleReaction> roleReactResponses)
         {
-            using (var db = await _dbFactory.OpenAsync())
-            {
-                db.CreateTableIfNotExists<RoleReaction>();
-                db.SaveAll(roleReactResponses);
-            }
+            using var db = await _dbFactory.OpenAsync();
+            db.CreateTableIfNotExists<RoleReaction>();
+            db.SaveAll(roleReactResponses);
         }
 
         public async Task<RoleReaction> GetRoleReaction(ulong messageId, string emoteName)
         {
-            using (var db = await _dbFactory.OpenAsync())
-            {
-                return db.Single<RoleReaction>(new { OfferingMessageId = messageId, Reaction = emoteName });
-            }
+            using var db = await _dbFactory.OpenAsync();
+            return db.Single<RoleReaction>(new { OfferingMessageId = messageId, Reaction = emoteName });
         }
 
         public async Task InsertWeightLog(WeightLogEntry weightLogEntry)
         {
-            using (var db = await _dbFactory.OpenAsync())
-            {
-                db.CreateTableIfNotExists<WeightLogEntry>();
-                db.Save(weightLogEntry);
-            }
+            using var db = await _dbFactory.OpenAsync();
+            db.CreateTableIfNotExists<WeightLogEntry>();
+            db.Save(weightLogEntry);
         }
 
         public async Task<IEnumerable<WeightLogEntry>> GetLeaderboard()
         {
-            using (var db = await _dbFactory.OpenAsync())
-            {
-                var list = await db.SqlListAsync<WeightLogEntry>(db.From<WeightLogEntry>());
-                var groups = list.GroupBy(x => x.UserId);
-                return groups.SelectMany(x => x.Where(y => y.TimeStamp == x.Max(z => z.TimeStamp))).ToList().OrderByDescending(x => x.Weight);
-            }
+            using var db = await _dbFactory.OpenAsync();
+            var list = await db.SqlListAsync<WeightLogEntry>(db.From<WeightLogEntry>());
+            var groups = list.GroupBy(x => x.UserId);
+            return groups.SelectMany(x => x.Where(y => y.TimeStamp == x.Max(z => z.TimeStamp))).ToList().OrderByDescending(x => x.Weight);
         }
 
         public async Task<GuildWelcome> GetGuildWelcome(ulong guildId)
