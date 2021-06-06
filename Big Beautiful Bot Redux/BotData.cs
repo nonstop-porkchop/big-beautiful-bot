@@ -48,5 +48,11 @@ namespace BBB
                 return groups.SelectMany(x => x.Where(y => y.TimeStamp == x.Max(z => z.TimeStamp))).ToList().OrderByDescending(x => x.Weight);
             }
         }
+
+        public async Task<GuildWelcome> GetGuildWelcome(ulong guildId)
+        {
+            using var db = await _dbFactory.OpenAsync();
+            return await db.SingleWhereAsync<GuildWelcome>(nameof(GuildWelcome.GuildId), guildId);
+        }
     }
 }

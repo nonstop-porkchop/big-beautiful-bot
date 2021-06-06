@@ -87,5 +87,13 @@ namespace BBB
         }
 
         private static Task<RestUserMessage> Ping(SocketMessage message) => message.Channel.SendMessageAsync((DateTimeOffset.Now - message.Timestamp).TotalMilliseconds.ToString("0ms"));
+
+        public async Task HandleUserJoin(SocketGuildUser socketGuildUser)
+        {
+            var welcome = await _botData.GetGuildWelcome(socketGuildUser.Guild.Id);
+            if (welcome is null) return;
+            var welcomeMessage = string.Format(welcome.MessageTemplate, socketGuildUser.Username);
+            await socketGuildUser.Guild.DefaultChannel.SendMessageAsync(welcomeMessage);
+        }
     }
 }

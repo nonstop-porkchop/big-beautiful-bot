@@ -17,8 +17,11 @@ namespace BBB
             _client.ReactionAdded += ClientOnReactionAdded;
             _client.ReactionRemoved += ClientOnReactionRemoved;
             _client.LoginAsync(TokenType.Bot, config.Token);
+            _client.UserJoined += ClientOnUserJoined;
             _logic = new BBBLogic(config);
         }
+
+        private async Task ClientOnUserJoined(SocketGuildUser arg) => await _logic.HandleUserJoin(arg);
 
         private async Task ClientOnReactionRemoved(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
         {
