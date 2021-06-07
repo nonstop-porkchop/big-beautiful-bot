@@ -6,7 +6,8 @@
         <RootNamespace>BBB</RootNamespace>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <AssemblyName>BigBeautifulBot</AssemblyName>
-    </PropertyGroup>
+        <UserSecretsId>285019da-4ee1-4787-ab38-c2cd1ca67bb0</UserSecretsId>
+  </PropertyGroup>
     
     <ItemGroup>
         <PackageReference Include="Discord.Net" Version="2.4.0" />

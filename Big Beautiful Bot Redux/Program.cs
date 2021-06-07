@@ -15,7 +15,11 @@ namespace BBB
         {
             return Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) => { services.AddHostedService<DiscordBotHost>(); })
-                .ConfigureAppConfiguration(app => { app.AddJsonFile("appsettings.json"); });
+                .ConfigureAppConfiguration(app =>
+                {
+                    app.AddJsonFile("appsettings.json");
+                    app.AddUserSecrets<DiscordBotHost>();
+                });
         }
     }
 }
