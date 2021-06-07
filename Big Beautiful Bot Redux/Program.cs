@@ -1,21 +1,21 @@
-﻿using System;
-using System.IO;
-using ServiceStack.Text;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace BBB
 {
-    internal class Program
+    public static class Program
     {
-        private static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            // Pull stuff in from the file system
-            var configJson = File.ReadAllText("config.json");
-            var config = JsonSerializer.DeserializeFromString<Config>(configJson);
+            CreateHostBuilder(args).Build().Run();
+        }
 
-            // Make bot and wait for shutdown
-            var bot = new DiscordBotHost(config);
-            var exitCode = bot.WaitForShutdown();
-            Environment.ExitCode = exitCode;
+        private static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureServices((hostContext, services) => { services.AddHostedService<DiscordBotHost>(); })
+                .ConfigureAppConfiguration(app => { app.AddJsonFile("appsettings.json"); });
         }
     }
 }

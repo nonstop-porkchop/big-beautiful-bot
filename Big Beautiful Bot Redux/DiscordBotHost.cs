@@ -1,24 +1,30 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace BBB
 {
-    internal class DiscordBotHost
+    internal class DiscordBotHost : IHostedService
     {
+        private readonly ILogger<DiscordBotHost> _logger;
         private static DiscordSocketClient _client;
         private readonly BBBLogic _logic;
 
-        public DiscordBotHost(Config config)
+        public DiscordBotHost(IConfiguration config, ILogger<DiscordBotHost> logger)
         {
+            _logger = logger;
             _client = new DiscordSocketClient();
             _client.LoggedIn += ClientOnLoggedIn;
             _client.MessageReceived += ClientOnMessageReceived;
             _client.ReactionAdded += ClientOnReactionAdded;
             _client.ReactionRemoved += ClientOnReactionRemoved;
-            _client.LoginAsync(TokenType.Bot, config.Token);
+            _client.LoginAsync(TokenType.Bot, config["Token"]);
             _client.UserJoined += ClientOnUserJoined;
-            _logic = new BBBLogic(config);
+            _logic = new BBBLogic(config["Prefix"], logger);
         }
 
         private async Task ClientOnUserJoined(SocketGuildUser arg) => await _logic.HandleUserJoin(arg);
@@ -31,11 +37,6 @@ namespace BBB
                 await _logic.HandleReactionRemoved(arg1, arg2, arg3);
             }
         }
-
-        /// <summary>
-        ///     A task that represents the runtime of the bot. When the bot shuts down, the bot should report this task complete.
-        /// </summary>
-        private TaskCompletionSource<int> TaskCompletionSource { get; } = new TaskCompletionSource<int>();
 
         private async Task ClientOnReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
         {
@@ -60,6 +61,11 @@ namespace BBB
 
         private static Task ClientOnLoggedIn() => _client.StartAsync();
 
-        public int WaitForShutdown() => TaskCompletionSource.Task.GetAwaiter().GetResult();
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken) => throw new System.NotImplementedException();
     }
 }

@@ -6,6 +6,7 @@ using BBB.BotFunctions;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
 
 namespace BBB
 {
@@ -17,25 +18,28 @@ namespace BBB
         private const string UserInputExceptionMessageTemplate = ":warning: {0}";
 
         private readonly BotData _botData;
-        private readonly Config _config;
+        private readonly string _prefix;
+        private readonly ILogger<DiscordBotHost> _logger;
         private readonly RoleManager _roleManager;
         private readonly WeightLog _weightLog;
 
-        public BBBLogic(Config config)
+        public BBBLogic(string prefix, ILogger<DiscordBotHost> logger)
         {
-            _config = config;
+            _prefix = prefix;
+            _logger = logger;
             _botData = new BotData();
             _roleManager = new RoleManager(_botData);
             _weightLog = new WeightLog(_botData);
         }
 
-
         public async Task HandleReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
             try
             {
-                var roleReaction = await _botData.GetRoleReaction(message.Id, reaction.Emote.ToString());
+                var emoteString = reaction.Emote.ToString();
+                var roleReaction = await _botData.GetRoleReaction(message.Id, emoteString);
                 if (roleReaction != null) await RoleManager.ApplyRoleReaction(reaction, roleReaction, message, true);
+                else _logger.LogDebug("Received {0} reaction on message id {1} but found no corresponding role to apply.", emoteString, message.Id);
             }
             catch (UserInputException e)
             {
@@ -70,9 +74,9 @@ namespace BBB
 
         private async Task HandleCommands(SocketMessage message)
         {
-            if (message.Content.StartsWith(_config.Prefix))
+            if (message.Content.StartsWith(_prefix))
             {
-                var messageSansPrefix = message.Content.TrimStart(_config.Prefix.ToCharArray());
+                var messageSansPrefix = message.Content.TrimStart(_prefix.ToCharArray());
                 var messageElements = Regex.Matches(messageSansPrefix, @"[\""].+?[\""]|[^ ]+").Select(x => x.Value.Trim('"')).ToList();
 
                 var commandName = messageElements.FirstOrDefault() ?? throw new UserInputException("There was no command specified.");
