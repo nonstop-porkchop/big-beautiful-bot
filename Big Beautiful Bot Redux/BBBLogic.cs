@@ -104,10 +104,20 @@ namespace BBB
 
         public async Task HandleUserJoin(SocketGuildUser socketGuildUser)
         {
+            _logger.LogInformation($"User {socketGuildUser.Username} joined {socketGuildUser.Guild.Name}, fetching welcome message...");
+            
             var welcome = await _botData.GetGuildWelcome(socketGuildUser.Guild.Id);
-            if (welcome is null) return;
+            if (welcome is null)
+            {
+                _logger.LogDebug($"Welcome message for {nameof(socketGuildUser.Guild.Id)} was not found.");
+                return;
+            }
+
             var welcomeMessage = string.Format(welcome.MessageTemplate, socketGuildUser.Mention);
-            await socketGuildUser.Guild.DefaultChannel.SendMessageAsync(welcomeMessage);
+            var guildDefaultChannel = socketGuildUser.Guild.DefaultChannel;
+            _logger.LogDebug($@"Greeting with: ""{welcomeMessage}"" in {guildDefaultChannel.Name}.");
+            
+            await guildDefaultChannel.SendMessageAsync(welcomeMessage);
         }
     }
 }
