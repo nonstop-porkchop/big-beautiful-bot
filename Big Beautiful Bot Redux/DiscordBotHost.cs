@@ -22,8 +22,8 @@ namespace BBB
             _client.MessageReceived += ClientOnMessageReceived;
             _client.ReactionAdded += ClientOnReactionAdded;
             _client.ReactionRemoved += ClientOnReactionRemoved;
-            _client.LoginAsync(TokenType.Bot, config["Token"]);
             _client.UserJoined += ClientOnUserJoined;
+            _client.LoginAsync(TokenType.Bot, config["Token"]);
             _logic = new BBBLogic(config["Prefix"], logger);
         }
 
