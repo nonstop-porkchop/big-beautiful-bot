@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -23,8 +24,29 @@ namespace BBB
             _client.ReactionAdded += ClientOnReactionAdded;
             _client.ReactionRemoved += ClientOnReactionRemoved;
             _client.UserJoined += ClientOnUserJoined;
+            _client.Log += ClientOnLog;
             _client.LoginAsync(TokenType.Bot, config["Token"]);
             _logic = new BBBLogic(config["Prefix"], logger);
+        }
+
+        private Task ClientOnLog(LogMessage arg)
+        {
+            _logger.Log(ToLogLevel(arg.Severity), arg.Exception, arg.Message);
+            return Task.CompletedTask;
+        }
+
+        private static LogLevel ToLogLevel(LogSeverity argSeverity)
+        {
+            return argSeverity switch
+            {
+                LogSeverity.Critical => LogLevel.Critical,
+                LogSeverity.Error => LogLevel.Error,
+                LogSeverity.Warning => LogLevel.Warning,
+                LogSeverity.Info => LogLevel.Information,
+                LogSeverity.Verbose => LogLevel.Trace,
+                LogSeverity.Debug => LogLevel.Debug,
+                _ => throw new ArgumentOutOfRangeException(nameof(argSeverity), argSeverity, "Couldn't translate LogSeverity to LogLevel.")
+            };
         }
 
         private async Task ClientOnUserJoined(SocketGuildUser arg) => await _logic.HandleUserJoin(arg);
