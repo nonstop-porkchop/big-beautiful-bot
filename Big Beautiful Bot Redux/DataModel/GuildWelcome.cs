@@ -1,11 +1,11 @@
+using JetBrains.Annotations;
 using ServiceStack.DataAnnotations;
 
-namespace BBB.DataModel
+namespace BBB.DataModel;
+
+internal class GuildWelcome
 {
-    internal class GuildWelcome
-    {
-        [AutoIncrement] public long GuildWelcomeId { get; set; }
-        public ulong GuildId { get; set; }
-        public string MessageTemplate { get; set; }
-    }
+    [UsedImplicitly] [AutoIncrement] public long GuildWelcomeId { get; set; }
+    public ulong GuildId { get; set; }
+    public string MessageTemplate { get; set; }
 }

@@ -1,11 +1,10 @@
 using System;
 
-namespace BBB
+namespace BBB;
+
+internal class UserInputException : Exception
 {
-    internal class UserInputException : Exception
+    public UserInputException(string s) : base(s)
     {
-        public UserInputException(string s) : base(s)
-        {
-        }
     }
 }

@@ -1,13 +1,13 @@
 using System;
+using JetBrains.Annotations;
 using ServiceStack.DataAnnotations;
 
-namespace BBB.DataModel
+namespace BBB.DataModel;
+
+internal class WeightLogEntry
 {
-    internal class WeightLogEntry
-    {
-        [AutoIncrement] public long WeightLogEntryId { get; set; }
-        public ulong UserId { get; set; }
-        public double Weight { get; set; }
-        public DateTime TimeStamp { get; set; }
-    }
+    [UsedImplicitly] [AutoIncrement] public long WeightLogEntryId { get; set; }
+    [UsedImplicitly] public ulong UserId { get; set; }
+    [UsedImplicitly] public double Weight { get; set; }
+    [UsedImplicitly] public DateTime TimeStamp { get; set; }
 }
