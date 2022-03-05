@@ -19,11 +19,11 @@ namespace BBB
 
         private readonly BotData _botData;
         private readonly string _prefix;
-        private readonly ILogger<DiscordBotHost> _logger;
+        private readonly ILogger<BBBLogic> _logger;
         private readonly RoleManager _roleManager;
         private readonly WeightLog _weightLog;
 
-        public BBBLogic(string prefix, ILogger<DiscordBotHost> logger)
+        public BBBLogic(string prefix, ILogger<BBBLogic> logger)
         {
             _prefix = prefix;
             _logger = logger;
@@ -39,7 +39,7 @@ namespace BBB
                 var emoteString = reaction.Emote.ToString();
                 var roleReaction = await _botData.GetRoleReaction(message.Id, emoteString);
                 if (roleReaction != null) await RoleManager.ApplyRoleReaction(reaction, roleReaction, message, true);
-                else _logger.LogDebug("Received {0} reaction on message id {1} but found no corresponding role to apply.", emoteString, message.Id);
+                else _logger.LogDebug("Received {Emote} reaction on message id {MessageId} but found no corresponding role to apply", emoteString, message.Id);
             }
             catch (UserInputException e)
             {
@@ -104,7 +104,7 @@ namespace BBB
 
         public async Task HandleUserJoin(SocketGuildUser socketGuildUser)
         {
-            _logger.LogInformation($"User {socketGuildUser.Username} joined {socketGuildUser.Guild.Name}, fetching welcome message...");
+            _logger.LogInformation("User {Username} joined {Guild}, fetching welcome message...", socketGuildUser.Username, socketGuildUser.Guild.Name);
             
             var welcome = await _botData.GetGuildWelcome(socketGuildUser.Guild.Id);
             if (welcome is null)
@@ -115,7 +115,7 @@ namespace BBB
 
             var welcomeMessage = string.Format(welcome.MessageTemplate, socketGuildUser.Mention);
             var guildDefaultChannel = socketGuildUser.Guild.DefaultChannel;
-            _logger.LogDebug($@"Greeting with: ""{welcomeMessage}"" in {guildDefaultChannel.Name}.");
+            _logger.LogDebug(@"Greeting with: ""{WelcomeMessage}"" in {Channel}", welcomeMessage, guildDefaultChannel.Name);
             
             await guildDefaultChannel.SendMessageAsync(welcomeMessage);
         }

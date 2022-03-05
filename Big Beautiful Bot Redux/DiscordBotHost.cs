@@ -15,9 +15,9 @@ namespace BBB
         private static DiscordSocketClient _client;
         private readonly BBBLogic _logic;
 
-        public DiscordBotHost(IConfiguration config, ILogger<DiscordBotHost> logger)
+        public DiscordBotHost(IConfiguration config, ILoggerFactory loggerFactory)
         {
-            _logger = logger;
+            _logger = new Logger<DiscordBotHost>(loggerFactory);
             _client = new DiscordSocketClient();
             _client.LoggedIn += ClientOnLoggedIn;
             _client.MessageReceived += ClientOnMessageReceived;
@@ -26,7 +26,7 @@ namespace BBB
             _client.UserJoined += ClientOnUserJoined;
             _client.Log += ClientOnLog;
             _client.LoginAsync(TokenType.Bot, config["Token"]);
-            _logic = new BBBLogic(config["Prefix"], logger);
+            _logic = new BBBLogic(config["Prefix"], new Logger<BBBLogic>(loggerFactory));
         }
 
         private Task ClientOnLog(LogMessage arg)
