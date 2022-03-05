@@ -15,14 +15,14 @@ internal class RoleManager
 
     public RoleManager(BotData botData) => _botData = botData;
 
-    public async Task OfferRoles(SocketMessage message, IEnumerable<string> args)
+    public async Task OfferRoles(SocketSlashCommand message)
     {
-        var guildUser = (IGuildUser) message.Author;
+        var guildUser = (IGuildUser) message.User;
         var guild = guildUser.Guild;
         var highestRolePosition = guild.Roles.Where(x => guildUser.RoleIds.Contains(x.Id)).Max(x => x.Position);
 
         var roleOffering = new EmbedBuilder { Title = "React with the corresponding emoji to receive a roll" };
-        var roleCommandArgs = args.ToArray();
+        var roleCommandArgs = message.Data.Options.Select(x => (string)x.Value).ToArray();
         if ((roleCommandArgs.Length & 1) == 1) throw new UserInputException("Expected an even amount of arguments.");
         var roleReactLookup = new List<RoleReaction>();
         for (var i = 0; i < roleCommandArgs.Length; i += 2)
@@ -45,7 +45,7 @@ internal class RoleManager
             roleReactLookup.Add(new RoleReaction { Role = role.Id, Reaction = displayEmoji });
         }
 
-        var embeddedMessage = await message.Channel.SendMessageAsync(embed: roleOffering.Build());
+        var embeddedMessage = await message.FollowupAsync(embed: roleOffering.Build());
         roleReactLookup.ForEach(x => x.OfferingMessageId = embeddedMessage.Id);
         await _botData.InsertRoleReactions(roleReactLookup);
     }

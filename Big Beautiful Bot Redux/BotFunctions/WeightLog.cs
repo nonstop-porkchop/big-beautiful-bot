@@ -15,11 +15,11 @@ internal class WeightLog
 
     public WeightLog(BotData botData) => _botData = botData;
 
-    public async Task LogWeight(SocketMessage message, List<string> commandArgs)
+    public async Task LogWeight(SocketSlashCommand message)
     {
-        if (commandArgs.Count != 1) throw new UserInputException($"Expected 1 argument but got {commandArgs.Count}.");
-        var weight = commandArgs.Single();
-        var regexMatch = Regex.Match(weight, @"^(\d+\.?\d*)((kgs?)|(lbs?)|(st))$").Groups;
+        if (message.Data.Options.Count != 1) throw new UserInputException($"Expected 1 argument but got {message.Data.Options.Count}.");
+        var weight = message.Data.Options.Single();
+        var regexMatch = Regex.Match((string)weight.Value, @"^(\d+\.?\d*)((kgs?)|(lbs?)|(st))$").Groups;
 
         var hasNumber = regexMatch[1].Success;
         if (!hasNumber) throw new UserInputException("Invalid number.");
@@ -48,12 +48,12 @@ internal class WeightLog
             throw new UserInputException("Invalid units.");
         }
 
-        var logEntry = new WeightLogEntry { UserId = message.Author.Id, Weight = kg, TimeStamp = message.CreatedAt.DateTime };
+        var logEntry = new WeightLogEntry { UserId = message.User.Id, Weight = kg, TimeStamp = message.CreatedAt.DateTime };
         await _botData.InsertWeightLog(logEntry);
-        await message.Channel.SendMessageAsync("Your weight has been updated.");
+        await message.RespondAsync("Your weight has been updated.");
     }
 
-    public async Task GetLeaderboard(SocketMessage message)
+    public async Task GetLeaderboard(SocketSlashCommand message)
     {
         var leaderboard = await _botData.GetLeaderboard();
         var users = (await message.Channel.GetUsersAsync().FlattenAsync()).ToList();
@@ -67,6 +67,6 @@ internal class WeightLog
             if (position == 10) break;
         }
 
-        await message.Channel.SendMessageAsync(embed: leaderboardEmbed.Build());
+        await message.RespondAsync(embed: leaderboardEmbed.Build());
     }
 }

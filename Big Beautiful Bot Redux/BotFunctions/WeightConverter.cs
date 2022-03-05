@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -12,10 +11,10 @@ internal static class WeightConverter
     public const double LbsWeightConversionConstant = 2.20462262185;
     public const double StWeightConversionConstant = 6.35029;
 
-    public static async Task ConvertWeight(SocketMessage message, ICollection<string> commandArgs)
+    public static async Task ConvertWeight(SocketSlashCommand message)
     {
-        if (commandArgs.Count != 1) throw new UserInputException($"Expected 1 argument, got {commandArgs.Count}.");
-        var single = commandArgs.Single();
+        if (message.Data.Options.Count != 1) throw new UserInputException($"Expected 1 argument, got {message.Data.Options.Count}.");
+        var single = (string)message.Data.Options.Single().Value;
 
         var isKg = Regex.Match(single, "kgs?$").Success;
         var isLbs = Regex.Match(single, "lbs?$").Success;
@@ -28,19 +27,19 @@ internal static class WeightConverter
         if (isKg)
         {
             var lbs = Math.Round(number * LbsWeightConversionConstant, 1);
-            await message.Channel.SendMessageAsync($"{number}kg is {lbs}lbs.");
+            await message.RespondAsync($"{number}kg is {lbs}lbs.");
         }
 
         if (isLbs)
         {
             var kg = Math.Round(number / LbsWeightConversionConstant, 1);
-            await message.Channel.SendMessageAsync($"{number}lbs is {kg}kg.");
+            await message.RespondAsync($"{number}lbs is {kg}kg.");
         }
 
         if (isSt)
         {
             var kg = Math.Round(number * StWeightConversionConstant, 1);
-            await message.Channel.SendMessageAsync($"{number}st is {kg}kg");
+            await message.RespondAsync($"{number}st is {kg}kg");
         }
     }
 }
