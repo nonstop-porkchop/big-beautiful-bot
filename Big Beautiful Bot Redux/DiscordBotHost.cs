@@ -51,21 +51,21 @@ namespace BBB
 
         private async Task ClientOnUserJoined(SocketGuildUser arg) => await _logic.HandleUserJoin(arg);
 
-        private async Task ClientOnReactionRemoved(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        private async Task ClientOnReactionRemoved(Cacheable<IUserMessage, ulong> arg1, Cacheable<IMessageChannel, ulong> cacheable, SocketReaction arg3)
         {
             var message = await arg1.GetOrDownloadAsync();
             if (message.Author.Id.Equals(_client.CurrentUser.Id))
             {
-                await _logic.HandleReactionRemoved(arg1, arg2, arg3);
+                await _logic.HandleReactionRemoved(arg1, cacheable, arg3);
             }
         }
 
-        private async Task ClientOnReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        private async Task ClientOnReactionAdded(Cacheable<IUserMessage, ulong> arg1, Cacheable<IMessageChannel, ulong> cacheable, SocketReaction arg3)
         {
             var message = await arg1.GetOrDownloadAsync();
             if (message.Author.Id.Equals(_client.CurrentUser.Id))
             {
-                await _logic.HandleReactionAdded(arg1, arg2, arg3);
+                await _logic.HandleReactionAdded(arg1, cacheable, arg3);
             }
         }
 
