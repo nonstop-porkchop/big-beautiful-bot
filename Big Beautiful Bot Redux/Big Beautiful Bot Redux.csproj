@@ -2,9 +2,8 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>BBB</RootNamespace>
-        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <AssemblyName>BigBeautifulBot</AssemblyName>
         <UserSecretsId>285019da-4ee1-4787-ab38-c2cd1ca67bb0</UserSecretsId>
   </PropertyGroup>
