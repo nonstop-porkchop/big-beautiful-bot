@@ -15,39 +15,50 @@ internal class RoleManager
 
     public RoleManager(BotData botData) => _botData = botData;
 
-    public async Task OfferRoles(SocketMessage message, IEnumerable<string> args)
+    public async Task OfferRoles(SocketSlashCommand message)
     {
-        var guildUser = (IGuildUser) message.Author;
+        if ((message.Data.Options.Count & 1) == 1) throw new UserInputException("Expected an even amount of arguments.");
+
+        var guildUser = (IGuildUser) message.User;
         var guild = guildUser.Guild;
         var highestRolePosition = guild.Roles.Where(x => guildUser.RoleIds.Contains(x.Id)).Max(x => x.Position);
 
         var roleOffering = new EmbedBuilder { Title = "React with the corresponding emoji to receive a roll" };
-        var roleCommandArgs = args.ToArray();
-        if ((roleCommandArgs.Length & 1) == 1) throw new UserInputException("Expected an even amount of arguments.");
+        var roleCommandArgs = message.Data.Options
+            .Join(message.Data.Options, GetRoleMatcher, GetEmojiMatcher, ToKeyValuePair)
+            .ToDictionary(x => x.Key, x => x.Value);
+
         var roleReactLookup = new List<RoleReaction>();
-        for (var i = 0; i < roleCommandArgs.Length; i += 2)
+        foreach (var (roleOption, emoteOption) in roleCommandArgs)
         {
-            var roleString = roleCommandArgs[i];
-            var stringRoles = guild.Roles.Where(x => x.Name.Equals(roleString) || x.Mention.Equals(roleString)).ToList();
+            var role = (IRole)roleOption.Value;
+            if (role.Position > highestRolePosition && !guildUser.GuildPermissions.Administrator || !guildUser.GuildPermissions.ManageRoles) throw new UserInputException($"User does not have an access level high enough to offer the role {roleOption}.");
 
-            if (stringRoles.Count > 1) throw new UserInputException($"The role {roleString} is ambiguous, please mention the role explicitly or rename the role and try again.");
-            if (!stringRoles.Any()) throw new UserInputException($"Couldn't find a role with the name {roleString}.");
-            var role = stringRoles.Single();
-
-            if (role.Position > highestRolePosition && !guildUser.GuildPermissions.Administrator || !guildUser.GuildPermissions.ManageRoles) throw new UserInputException($"User does not have an access level high enough to offer the role {roleString}.");
-
-            var emoteArg = roleCommandArgs[i + 1];
-            var isEmote = Emote.TryParse(emoteArg, out var emote);
-            if (!isEmote && !Emoji.IsEmoji(emoteArg)) throw new UserInputException($"{emoteArg} is not a valid emoji.");
-            var displayEmoji = isEmote ? emote.ToString() : emoteArg;
+            var rawEmote = (string)emoteOption.Value;
+            var isEmote = Emote.TryParse(rawEmote, out var emote);
+            if (!isEmote && !Emoji.IsEmoji(rawEmote)) throw new UserInputException($"{rawEmote} is not a valid emoji.");
+            var displayEmoji = isEmote ? emote.ToString() : rawEmote;
 
             roleOffering.Description += $"{displayEmoji} - **{role.Name}**\n";
             roleReactLookup.Add(new RoleReaction { Role = role.Id, Reaction = displayEmoji });
         }
 
-        var embeddedMessage = await message.Channel.SendMessageAsync(embed: roleOffering.Build());
+        await message.RespondAsync(embed: roleOffering.Build());
+        var embeddedMessage = await message.GetOriginalResponseAsync();
         roleReactLookup.ForEach(x => x.OfferingMessageId = embeddedMessage.Id);
         await _botData.InsertRoleReactions(roleReactLookup);
+    }
+
+    private static KeyValuePair<T1, T2> ToKeyValuePair<T1, T2>(T1 x, T2 y) => new(x, y);
+
+    private static string GetEmojiMatcher(SocketSlashCommandDataOption arg)
+    {
+        return arg.Type == ApplicationCommandOptionType.Role ? Guid.NewGuid().ToString() : arg.Name.Split('-').Last();
+    }
+
+    private static string GetRoleMatcher(SocketSlashCommandDataOption arg)
+    {
+        return arg.Type != ApplicationCommandOptionType.Role ? Guid.NewGuid().ToString() : arg.Name.Split('-').Last();
     }
 
     public static async Task ApplyRoleReaction(SocketReaction reaction, RoleReaction roleReaction, Cacheable<IUserMessage, ulong> cacheable, bool added)

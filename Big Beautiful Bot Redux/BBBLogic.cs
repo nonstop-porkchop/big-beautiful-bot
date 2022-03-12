@@ -1,10 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BBB.BotFunctions;
 using Discord;
-using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 
@@ -18,14 +17,12 @@ internal class BBBLogic
     private const string UserInputExceptionMessageTemplate = ":warning: {0}";
 
     private readonly BotData _botData;
-    private readonly string _prefix;
     private readonly ILogger<BBBLogic> _logger;
     private readonly RoleManager _roleManager;
     private readonly WeightLog _weightLog;
 
-    public BBBLogic(string prefix, ILogger<BBBLogic> logger)
+    public BBBLogic(ILogger<BBBLogic> logger)
     {
-        _prefix = prefix;
         _logger = logger;
         _botData = new BotData();
         _roleManager = new RoleManager(_botData);
@@ -60,47 +57,55 @@ internal class BBBLogic
         }
     }
 
-    public async Task HandleMessage(SocketMessage message)
+    public async Task HandleCommand(SocketSlashCommand message)
     {
         try
         {
-            await HandleCommands(message);
+            if (message.CommandName.Equals("ping", StringComparison.InvariantCultureIgnoreCase)) await Ping(message);
+            if (message.CommandName.Equals("offer", StringComparison.InvariantCultureIgnoreCase)) await _roleManager.OfferRoles(message);
+            if (message.CommandName.Equals("convert", StringComparison.InvariantCultureIgnoreCase)) await WeightConverter.ConvertWeight(message);
+            if (message.CommandName.Equals("log-weight", StringComparison.InvariantCultureIgnoreCase)) await _weightLog.LogWeight(message);
+            if (message.CommandName.Equals("set-welcome", StringComparison.InvariantCultureIgnoreCase)) await SetGuildWelcome(message);
+            if (message.CommandName.Equals("leaderboard", StringComparison.InvariantCultureIgnoreCase)) await _weightLog.GetLeaderboard(message);
         }
         catch (UserInputException e)
         {
-            await message.Channel.SendMessageAsync(string.Format(UserInputExceptionMessageTemplate, e.Message));
+            await message.RespondAsync(string.Format(UserInputExceptionMessageTemplate, e.Message));
         }
     }
 
-    private async Task HandleCommands(SocketMessage message)
+    public static IEnumerable<SlashCommandBuilder> GetCommands()
     {
-        if (message.Content.StartsWith(_prefix))
+        yield return new SlashCommandBuilder { Name = "ping", Description = "Poorly estimates the time taken for your command to reach the BBB server" };
+        var offerCommandBuilder = new SlashCommandBuilder { Name = "offer", Description = "Creates an embed that allows users to assign their own roles" };
+        for (var i = 1; i < 7; i++)
         {
-            var messageSansPrefix = message.Content.TrimStart(_prefix.ToCharArray());
-            var messageElements = Regex.Matches(messageSansPrefix, @"[\""].+?[\""]|[^ ]+").Select(x => x.Value.Trim('"')).ToList();
-
-            var commandName = messageElements.FirstOrDefault() ?? throw new UserInputException("There was no command specified.");
-            var commandArgs = messageElements.Skip(1).ToList();
-
-            if (commandName.Equals("ping", StringComparison.InvariantCultureIgnoreCase)) await Ping(message);
-            if (commandName.Equals("offer", StringComparison.InvariantCultureIgnoreCase)) await _roleManager.OfferRoles(message, commandArgs);
-            if (commandName.Equals("convert", StringComparison.InvariantCultureIgnoreCase)) await WeightConverter.ConvertWeight(message, commandArgs);
-            if (commandName.Equals("logWeight", StringComparison.InvariantCultureIgnoreCase)) await _weightLog.LogWeight(message, commandArgs);
-            if (commandName.Equals("setWelcome", StringComparison.InvariantCultureIgnoreCase)) await SetGuildWelcome(message, messageSansPrefix["setWelcome".Length..]);
-            if (commandName.Equals("leaderboard", StringComparison.InvariantCultureIgnoreCase)) await _weightLog.GetLeaderboard(message);
+            offerCommandBuilder.AddOption($"role-{i}", ApplicationCommandOptionType.Role, "The role assigned by the proceeding emote", i == 1);
+            offerCommandBuilder.AddOption($"emote-{i}", ApplicationCommandOptionType.String, "The emote that will assign the preceding role", i == 1);    
         }
+        yield return offerCommandBuilder;
+        var convertCommandBuilder = new SlashCommandBuilder { Name = "convert", Description = "Converts units of weight between lbs, kgs and stn" };
+        convertCommandBuilder.AddOption("weight", ApplicationCommandOptionType.String, "The weight to convert", true);
+        yield return convertCommandBuilder;
+        var logWeightCommandBuilder = new SlashCommandBuilder { Name = "log-weight", Description = "Logs your weight to the weight database for use in leaderboard" };
+        logWeightCommandBuilder.AddOption("weight", ApplicationCommandOptionType.String, "Your current weight", true);
+        yield return logWeightCommandBuilder;
+        var setWelcomeCommandBuilder = new SlashCommandBuilder { Name = "set-welcome", Description = "Sets the welcome message for the guild" };
+        setWelcomeCommandBuilder.AddOption("greeting", ApplicationCommandOptionType.String, "The greeting to send when a new member joins");
+        yield return setWelcomeCommandBuilder;
+        yield return new SlashCommandBuilder { Name = "leaderboard", Description = "Displays the weight leaderboard for this guild" };
     }
 
-    private async Task SetGuildWelcome(SocketMessage message, string messageText)
+    private async Task SetGuildWelcome(SocketSlashCommand message)
     {
-        var guildUser = (IGuildUser) message.Author;
+        var guildUser = (IGuildUser) message.User;
         if (!guildUser.GuildPermissions.Administrator) throw new UserInputException("You must be an administrator to set a welcome message.");
         var messageChannel = (SocketGuildChannel)message.Channel;
-        await _botData.SetGuildWelcome(messageChannel.Guild.Id, messageText.Trim());
-        await message.Channel.SendMessageAsync("The welcome message was set :white_check_mark:");
+        await _botData.SetGuildWelcome(messageChannel.Guild.Id, (string) message.Data.Options.Single().Value);
+        await message.RespondAsync("The welcome message was set :white_check_mark:");
     }
 
-    private static Task<RestUserMessage> Ping(SocketMessage message) => message.Channel.SendMessageAsync((DateTimeOffset.Now - message.Timestamp).TotalMilliseconds.ToString("0ms"));
+    private static Task Ping(SocketInteraction message) => message.RespondAsync((DateTimeOffset.Now - message.CreatedAt).TotalMilliseconds.ToString("0ms"));
 
     public async Task HandleUserJoin(SocketGuildUser socketGuildUser)
     {
@@ -119,4 +124,6 @@ internal class BBBLogic
             
         await guildDefaultChannel.SendMessageAsync(welcomeMessage);
     }
+
+    public async Task PreparePersistence() => await _botData.EnsureTablesExist();
 }

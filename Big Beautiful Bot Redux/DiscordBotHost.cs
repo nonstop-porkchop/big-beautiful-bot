@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -18,15 +19,28 @@ internal class DiscordBotHost : IHostedService
     public DiscordBotHost(IConfiguration config, ILoggerFactory loggerFactory)
     {
         _logger = new Logger<DiscordBotHost>(loggerFactory);
-        _client = new DiscordSocketClient();
+        _client = new DiscordSocketClient(new DiscordSocketConfig { UseInteractionSnowflakeDate = false });
         _client.LoggedIn += ClientOnLoggedIn;
-        _client.MessageReceived += ClientOnMessageReceived;
         _client.ReactionAdded += ClientOnReactionAdded;
         _client.ReactionRemoved += ClientOnReactionRemoved;
         _client.UserJoined += ClientOnUserJoined;
         _client.Log += ClientOnLog;
+        _client.SlashCommandExecuted += ClientOnSlashCommandExecuted;
+        _client.Ready += ClientOnReady;
         _client.LoginAsync(TokenType.Bot, config["Token"]);
-        _logic = new BBBLogic(config["Prefix"], new Logger<BBBLogic>(loggerFactory));
+        _logic = new BBBLogic(new Logger<BBBLogic>(loggerFactory));
+    }
+
+    private async Task ClientOnSlashCommandExecuted(SocketSlashCommand arg)
+    {
+        await _logic.HandleCommand(arg);
+    }
+
+    private async Task ClientOnReady()
+    {
+        var registrations = BBBLogic.GetCommands().Select(x => _client.CreateGlobalApplicationCommandAsync(x.Build()));
+        await Task.WhenAll(registrations);
+        await _logic.PreparePersistence();
     }
 
     private Task ClientOnLog(LogMessage arg)
@@ -69,24 +83,9 @@ internal class DiscordBotHost : IHostedService
         }
     }
 
-    private async Task ClientOnMessageReceived(SocketMessage message)
-    {
-        if (Equals(message.Author.Id, _client.CurrentUser.Id))
-        {
-            // It's myself                
-        }
-        else
-        {
-            await _logic.HandleMessage(message);
-        }
-    }
-
     private static Task ClientOnLoggedIn() => _client.StartAsync();
 
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
+    public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     public Task StopAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
 }
