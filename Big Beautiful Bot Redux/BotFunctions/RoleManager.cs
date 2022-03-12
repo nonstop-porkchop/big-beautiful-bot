@@ -45,7 +45,8 @@ internal class RoleManager
             roleReactLookup.Add(new RoleReaction { Role = role.Id, Reaction = displayEmoji });
         }
 
-        var embeddedMessage = await message.FollowupAsync(embed: roleOffering.Build());
+        await message.RespondAsync(embed: roleOffering.Build());
+        var embeddedMessage = await message.GetOriginalResponseAsync();
         roleReactLookup.ForEach(x => x.OfferingMessageId = embeddedMessage.Id);
         await _botData.InsertRoleReactions(roleReactLookup);
     }
