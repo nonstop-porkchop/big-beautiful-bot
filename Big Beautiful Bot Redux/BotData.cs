@@ -13,6 +13,13 @@ internal class BotData
 
     public BotData() => _dbFactory = new OrmLiteConnectionFactory("botdata.db", new SqliteOrmLiteDialectProvider());
 
+    public async Task EnsureTablesExist()
+    {
+        var db = await _dbFactory.OpenAsync();
+        var models = typeof(GuildWelcome).Assembly.GetTypes().Where(x => $"{nameof(BBB)}.{nameof(DataModel)}".Equals(x.Namespace));
+        db.CreateTableIfNotExists(models.ToArray());
+    }
+
     public async Task InsertRoleReactions(IEnumerable<RoleReaction> roleReactResponses)
     {
         using var db = await _dbFactory.OpenAsync();

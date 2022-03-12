@@ -36,10 +36,11 @@ internal class DiscordBotHost : IHostedService
         await _logic.HandleCommand(arg);
     }
 
-    private static async Task ClientOnReady()
+    private async Task ClientOnReady()
     {
         var registrations = BBBLogic.GetCommands().Select(x => _client.CreateGlobalApplicationCommandAsync(x.Build()));
         await Task.WhenAll(registrations);
+        await _logic.PreparePersistence();
     }
 
     private Task ClientOnLog(LogMessage arg)

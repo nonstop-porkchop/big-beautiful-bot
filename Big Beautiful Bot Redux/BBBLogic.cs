@@ -118,4 +118,6 @@ internal class BBBLogic
             
         await guildDefaultChannel.SendMessageAsync(welcomeMessage);
     }
+
+    public async Task PreparePersistence() => await _botData.EnsureTablesExist();
 }
