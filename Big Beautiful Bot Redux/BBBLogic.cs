@@ -77,7 +77,13 @@ internal class BBBLogic
     public static IEnumerable<SlashCommandBuilder> GetCommands()
     {
         yield return new SlashCommandBuilder { Name = "ping", Description = "Poorly estimates the time taken for your command to reach the BBB server" };
-        yield return new SlashCommandBuilder { Name = "offer", Description = "Creates an embed that allows users to assign their own roles" };
+        var offerCommandBuilder = new SlashCommandBuilder { Name = "offer", Description = "Creates an embed that allows users to assign their own roles" };
+        for (var i = 1; i < 7; i++)
+        {
+            offerCommandBuilder.AddOption($"role-{i}", ApplicationCommandOptionType.Role, "The role assigned by the proceeding emote", i == 1);
+            offerCommandBuilder.AddOption($"emote-{i}", ApplicationCommandOptionType.String, "The emote that will assign the preceding role", i == 1);    
+        }
+        yield return offerCommandBuilder;
         var convertCommandBuilder = new SlashCommandBuilder { Name = "convert", Description = "Converts units of weight between lbs, kgs and stn" };
         convertCommandBuilder.AddOption("weight", ApplicationCommandOptionType.String, "The weight to convert", true);
         yield return convertCommandBuilder;
