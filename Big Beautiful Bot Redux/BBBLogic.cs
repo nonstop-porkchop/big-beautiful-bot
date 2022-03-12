@@ -102,7 +102,7 @@ internal class BBBLogic
         if (!guildUser.GuildPermissions.Administrator) throw new UserInputException("You must be an administrator to set a welcome message.");
         var messageChannel = (SocketGuildChannel)message.Channel;
         await _botData.SetGuildWelcome(messageChannel.Guild.Id, (string) message.Data.Options.Single().Value);
-        await message.Channel.SendMessageAsync("The welcome message was set :white_check_mark:");
+        await message.RespondAsync("The welcome message was set :white_check_mark:");
     }
 
     private static Task Ping(SocketInteraction message) => message.RespondAsync((DateTimeOffset.Now - message.CreatedAt).TotalMilliseconds.ToString("0ms"));
