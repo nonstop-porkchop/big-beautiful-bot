@@ -36,9 +36,9 @@ internal class DiscordBotHost : IHostedService
         await _logic.HandleCommand(arg);
     }
 
-    private async Task ClientOnReady()
+    private static async Task ClientOnReady()
     {
-        var registrations = _logic.GetCommands().Select(x => _client.CreateGlobalApplicationCommandAsync(x.Build()));
+        var registrations = BBBLogic.GetCommands().Select(x => _client.CreateGlobalApplicationCommandAsync(x.Build()));
         await Task.WhenAll(registrations);
     }
 
@@ -84,10 +84,7 @@ internal class DiscordBotHost : IHostedService
 
     private static Task ClientOnLoggedIn() => _client.StartAsync();
 
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
+    public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     public Task StopAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
 }

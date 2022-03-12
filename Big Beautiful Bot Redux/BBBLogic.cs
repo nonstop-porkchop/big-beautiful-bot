@@ -74,7 +74,7 @@ internal class BBBLogic
         }
     }
 
-    public IEnumerable<SlashCommandBuilder> GetCommands()
+    public static IEnumerable<SlashCommandBuilder> GetCommands()
     {
         yield return new SlashCommandBuilder { Name = "ping", Description = "Poorly estimates the time taken for your command to reach the BBB server" };
         yield return new SlashCommandBuilder { Name = "offer", Description = "Creates an embed that allows users to assign their own roles" };
@@ -99,7 +99,7 @@ internal class BBBLogic
         await message.Channel.SendMessageAsync("The welcome message was set :white_check_mark:");
     }
 
-    private static Task Ping(SocketSlashCommand message) => message.RespondAsync((DateTimeOffset.Now - message.CreatedAt).TotalMilliseconds.ToString("0ms"));
+    private static Task Ping(SocketInteraction message) => message.RespondAsync((DateTimeOffset.Now - message.CreatedAt).TotalMilliseconds.ToString("0ms"));
 
     public async Task HandleUserJoin(SocketGuildUser socketGuildUser)
     {
